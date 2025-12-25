@@ -1,0 +1,92 @@
+# Tunix SFT Configuration
+# =======================
+# Supervised Fine-Tuning config for Gemma reasoning training
+# Optimized for Kaggle TPU v5e-8 (9-hour session)
+
+# Model Configuration
+model:
+  name: "gemma3-1b"  # Options: gemma3-1b, gemma2-2b
+  pretrained_path: "google/gemma-3-1b-it"  # HF or local path
+  use_peft: true
+  peft_config:
+    method: "lora"  # Options: lora, qlora
+    r: 16  # LoRA rank (8-64, higher = more capacity but slower)
+    alpha: 32  # LoRA alpha (typically 2*r)
+    dropout: 0.05
+    target_modules:
+      - "q_proj"
+      - "v_proj"
+      - "k_proj"
+      - "o_proj"
+      - "gate_proj"
+      - "up_proj"
+      - "down_proj"
+
+# Training Configuration
+training:
+  # Learning rate and optimizer
+  learning_rate: 1.0e-5
+  optimizer: "adamw"  # Options: adamw, adafactor
+  weight_decay: 0.01
+  warmup_ratio: 0.03
+  lr_scheduler: "cosine"  # Options: linear, cosine, constant
+  
+  # Batch and accumulation
+  per_device_batch_size: 4
+  gradient_accumulation_steps: 8  # Effective batch = 4 * 8 = 32
+  
+  # Epochs and steps
+  num_epochs: 2
+  max_steps: -1  # -1 = use epochs
+  
+  # Precision
+  bf16: true
+  tf32: true
+  
+  # Gradient handling
+  max_grad_norm: 1.0
+
+# Sequence Configuration  
+sequence:
+  max_input_length: 512
+  max_output_length: 800  # Keep < 1K per Kaggle rules
+  max_total_length: 1312
+  padding_side: "right"
+  truncation_side: "left"
+
+# Data Configuration
+data:
+  train_file: "data/prepared/train.jsonl"
+  val_file: "data/prepared/valid.jsonl"
+  text_field: "text"  # Field containing formatted prompt+response
+  streaming: false  # Set true for very large datasets
+  num_workers: 4
+
+# Checkpointing
+checkpoints:
+  output_dir: "checkpoints/sft"
+  save_strategy: "time"  # Options: steps, epochs, time
+  save_minutes: 30  # Save every 30 minutes
+  save_total_limit: 5  # Keep only last 5 checkpoints
+  resume_from: null  # Path to resume from (or null)
+
+# Logging
+logging:
+  log_steps: 50
+  log_dir: "logs/tensorboard"
+  report_to: "tensorboard"  # Options: tensorboard, wandb, none
+
+# Validation
+validation:
+  eval_strategy: "steps"
+  eval_steps: 500
+  eval_samples: 100  # Number of samples for quick eval
+
+# Reproducibility
+seed: 42
+deterministic: false  # Set true for exact reproducibility (slower)
+
+# TPU Specific
+tpu:
+  mesh_shape: [1, 8]  # For TPU v5e-8
+  use_pjit: true

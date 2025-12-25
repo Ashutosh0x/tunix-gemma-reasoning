@@ -1,0 +1,9 @@
+{
+  "Baseline (synthetic)": {
+    "n": 50,
+    "accuracy": 1.0,
+    "format_rate": 1.0,
+    "avg_trace_score": 0.5100000000000001,
+    "avg_composite": 0.5505
+  }
+}

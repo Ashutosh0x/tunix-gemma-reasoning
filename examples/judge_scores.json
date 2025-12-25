@@ -1,0 +1,32 @@
+{
+    "judge_model": "gpt-4",
+    "num_samples": 50,
+    "criteria": [
+        "logical_correctness",
+        "clarity",
+        "stepwise_reasoning"
+    ],
+    "average_score": 4.1,
+    "breakdown": {
+        "logical_correctness": 4.3,
+        "clarity": 4.0,
+        "stepwise_reasoning": 4.1
+    },
+    "sample_feedback": [
+        {
+            "id": 1,
+            "score": 5,
+            "comment": "Excellent step-by-step breakdown with clear conclusion"
+        },
+        {
+            "id": 2,
+            "score": 4,
+            "comment": "Good reasoning but slightly verbose"
+        },
+        {
+            "id": 3,
+            "score": 3,
+            "comment": "Correct answer but reasoning could be more explicit"
+        }
+    ]
+}

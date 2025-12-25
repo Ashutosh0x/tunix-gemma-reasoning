@@ -1,0 +1,58 @@
+{
+    "target_metrics": {
+        "format_compliance": {
+            "target": 0.95,
+            "description": "Percentage of outputs with valid <reasoning>/<answer> tags"
+        },
+        "gsm8k_accuracy": {
+            "target_low": 0.40,
+            "target_high": 0.65,
+            "description": "Pass@1 accuracy on GSM8K-style problems"
+        },
+        "trace_structure": {
+            "target": 0.70,
+            "excellent": 0.85,
+            "description": "Heuristic score for reasoning quality (0-1)"
+        },
+        "composite_metric": {
+            "competitive": 0.65,
+            "strong": 0.75,
+            "description": "Weighted: 0.6*correctness + 0.25*trace + 0.15*conf"
+        },
+        "llm_judge": {
+            "target": 3.5,
+            "excellent": 4.0,
+            "scale": "1-5 Likert",
+            "samples": 50
+        }
+    },
+    "expected_results_table": {
+        "baseline_zero_shot": {
+            "gsm8k_acc": 0.18,
+            "format_rate": 0.12,
+            "avg_trace": 0.22,
+            "composite": 0.21
+        },
+        "sft_only": {
+            "gsm8k_acc": 0.42,
+            "format_rate": 0.98,
+            "avg_trace": 0.72,
+            "composite": 0.61
+        },
+        "sft_plus_grpo": {
+            "gsm8k_acc": 0.58,
+            "format_rate": 0.99,
+            "avg_trace": 0.86,
+            "composite": 0.77
+        }
+    },
+    "runtime_specs": {
+        "model": "gemma3-1b-it",
+        "hardware": "Kaggle TPU v5e-8",
+        "session_hours": 9,
+        "sft_hours": 2,
+        "grpo_hours": 5,
+        "eval_hours": 1,
+        "buffer_hours": 1
+    }
+}

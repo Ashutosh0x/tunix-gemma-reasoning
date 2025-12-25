@@ -1,0 +1,21 @@
+{
+    "dataset": "GSM8K",
+    "model": "gemma3-1b-sft-grpo",
+    "checkpoint": "checkpoints/rl/best",
+    "num_samples": 200,
+    "accuracy": 0.58,
+    "format_rate": 0.99,
+    "avg_trace_score": 0.86,
+    "avg_composite": 0.77,
+    "runtime_hours": 8.6,
+    "tpu": "v5e-8",
+    "timestamp": "2025-12-25T20:00:00Z",
+    "config": {
+        "sft_epochs": 2,
+        "sft_lr": 1e-5,
+        "grpo_updates": 2000,
+        "grpo_lr": 3e-6,
+        "grpo_G": 4,
+        "kl_beta": 0.03
+    }
+}

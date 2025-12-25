@@ -1,0 +1,131 @@
+# Tunix GRPO/RL Configuration
+# ============================
+# On-policy RL config for reasoning improvement
+# Follows SFT phase; optimized for Kaggle TPU v5e-8
+
+# Model Configuration
+model:
+  # Load from SFT checkpoint
+  checkpoint_path: "checkpoints/sft/latest"
+  base_model: "gemma3-1b"
+  
+  # Policy head (if separate from base)
+  add_value_head: false  # GRPO is critic-free
+  
+  # LoRA (continue from SFT or new)
+  peft_config:
+    method: "lora"
+    r: 16
+    alpha: 32
+    dropout: 0.05
+    load_from_sft: true  # Load LoRA weights from SFT
+
+# GRPO Configuration
+grpo:
+  # Group sampling
+  num_generations: 4  # G: number of responses per prompt
+  temperature: 0.8  # Sampling temperature for diversity
+  top_p: 0.95
+  top_k: 50
+  
+  # Policy update
+  learning_rate: 3.0e-6  # Lower than SFT
+  kl_coef: 0.03  # KL penalty coefficient (beta)
+  clip_epsilon: 0.2  # PPO-style clipping
+  
+  # Advantage computation
+  advantage_normalization: true
+  advantage_clip: 5.0  # Clip extreme advantages
+  
+  # Training steps
+  num_updates: 2000  # Total GRPO update steps
+  batch_size: 2  # Prompts per batch (generates G*batch_size responses)
+  gradient_accumulation: 4  # Effective prompt batch = 8
+  
+  # Reference model
+  use_reference_model: true
+  ref_model_update_freq: 100  # Update ref model every N steps (0 = never)
+
+# Reward Configuration
+reward:
+  # Composite reward weights (must sum ~1.0)
+  weights:
+    correctness: 0.60  # Final answer correctness
+    trace_structure: 0.25  # Reasoning quality
+    confidence: 0.15  # Confidence calibration
+  
+  # Correctness settings
+  correctness:
+    numeric_tolerance: 0.001
+    case_sensitive: false
+    normalize_units: true
+  
+  # Trace structure heuristics
+  trace:
+    min_steps: 2  # Minimum reasoning steps
+    ideal_steps: 4  # Target number of steps
+    max_length: 800  # Penalize very long traces
+    require_tags: true  # Require <reasoning> and <answer> tags
+  
+  # Confidence calibration (RLPR-inspired)
+  confidence:
+    penalize_overconfident_wrong: true
+    reward_confident_correct: true
+    log_prob_scale: 10.0  # Scaling for log-prob normalization
+
+# Data Configuration
+data:
+  # Mix of verifiable and open-ended prompts
+  train_prompts: "data/prepared/train_prompts.jsonl"
+  include_references: true  # Include reference answers for reward
+  
+  # Prompt sampling
+  shuffle: true
+  max_prompts: 5000  # Limit for 9-hour session
+
+# Sequence Configuration
+sequence:
+  max_input_length: 512
+  max_output_length: 800
+  max_total_length: 1312
+  stop_tokens:
+    - "</answer>"
+    - "\n\n\n"
+
+# Checkpointing
+checkpoints:
+  output_dir: "checkpoints/rl"
+  save_strategy: "time"
+  save_minutes: 20  # Save frequently during RL
+  save_total_limit: 10
+  save_best: true
+  best_metric: "composite_score"  # Track this for best checkpoint
+
+# Logging
+logging:
+  log_steps: 20
+  log_dir: "logs/tensorboard"
+  log_rewards: true  # Log reward components
+  log_samples: true  # Log sample generations
+  sample_log_freq: 100  # Log samples every N steps
+
+# Evaluation
+evaluation:
+  eval_freq: 100  # Evaluate every N updates
+  eval_prompts: 50  # Number of held-out prompts
+  eval_file: "data/prepared/valid.jsonl"
+  compute_judge: false  # LLM-as-judge (expensive, do at end)
+
+# Reproducibility
+seed: 42
+
+# TPU Specific
+tpu:
+  mesh_shape: [1, 8]
+  use_pjit: true
+  
+# Early stopping (optional)
+early_stopping:
+  enabled: false
+  patience: 5  # Stop if no improvement for N evals
+  min_delta: 0.01  # Minimum improvement threshold
