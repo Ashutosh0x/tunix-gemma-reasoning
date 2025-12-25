@@ -1,50 +1,64 @@
-# Tunix Kaggle Hackathon — Teach Gemma to Show Its Work
+# Teaching Gemma to Show Its Work: Reasoning Traces with Tunix
 
-Train a Gemma model (Gemma2 2B or Gemma3 1B) using [Tunix](https://github.com/google/tunix) to output structured reasoning traces followed by answers.
+[![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python&logoColor=white)](https://www.python.org/)
+[![JAX](https://img.shields.io/badge/JAX-Powered-blue?logo=google&logoColor=white)](https://github.com/google/jax)
+[![Flax](https://img.shields.io/badge/Flax-Framework-orange?logo=google&logoColor=white)](https://github.com/google/flax)
+[![Gemma](https://img.shields.io/badge/Gemma-Model-blue)](https://ai.google.dev/gemma)
+[![Kaggle](https://img.shields.io/badge/Kaggle-TPU--v5e--8-blue?logo=kaggle&logoColor=white)](https://www.kaggle.com/)
 
-## 🎯 Goal
+This project implements a two-stage post-training pipeline to teach Gemma3-1B and Gemma2-2B how to produce structured reasoning traces. By leveraging the Tunix library on Kaggle TPUs, we transition models from direct answering to a chain-of-thought format.
 
-Make the model output:
+## Training Architecture
+
+The pipeline follows a progressive refinement strategy, moving from supervised imitation to on-policy reinforcement learning.
+
+```mermaid
+graph TD
+    A[Base Gemma Model] --> B[Stage 1: Supervised Fine-Tuning]
+    B --> C[Format-Compliant SFT Checkpoint]
+    C --> D[Stage 2: GRPO Reinforcement Learning]
+    D --> E[Final Reasoning Model]
+    
+    subgraph Data Flow
+        SFT_Data[CoT Examples] --> B
+        Reward_Model[Composite Reward Function] --> D
+    end
+    
+    subgraph Reward Components
+        D --> R1[Correctness]
+        D --> R2[Trace Structure]
+        D --> R3[Confidence Penalty]
+    end
+```
+
+## Objective
+
+The primary goal is to enforce a strict output schema that separates reasoning from the final answer.
+
 ```xml
-<reasoning>step-by-step thinking</reasoning>
-<answer>final answer</answer>
+<reasoning>
+The model demonstrates its step-by-step thinking process here.
+</reasoning>
+<answer>
+The final concise result is placed here.
+</answer>
 ```
 
-## 📁 Project Structure
+## Quick Start Technical Guide
 
-```
-├── notebooks/           # Kaggle-ready notebooks
-│   ├── 00_setup_environment.ipynb
-│   ├── 01_data_prep_and_tokenize.ipynb
-│   ├── 02_sft_training.ipynb
-│   ├── 03_rl_grpo_training.ipynb
-│   └── 04_evaluation_and_export.ipynb
-├── configs/             # Training configurations
-│   ├── sft_config.yaml
-│   └── rl_config.yaml
-├── src/                 # Core modules
-│   ├── rewards.py       # Composite reward functions
-│   ├── data_utils.py    # Dataset loaders
-│   ├── eval.py          # Evaluation harness
-│   └── export.py        # Checkpoint export
-├── data/                # Datasets
-│   ├── raw/             # Original datasets
-│   ├── prepared/        # Formatted for training
-│   └── tokenized/       # Pre-tokenized shards
-├── checkpoints/         # Model checkpoints
-├── logs/                # Training logs
-└── submissions/         # Kaggle submission files
-```
+### Environment Setup
 
-## 🚀 Quick Start
+Install the required JAX-based stack and the Tunix library.
 
-### 1. Setup Environment
 ```bash
 pip install git+https://github.com/google/tunix.git
 pip install jax jaxlib flax optax transformers datasets
 ```
 
-### 2. Prepare Data
+### Data Preparation
+
+Format your raw datasets into the required reasoning-answer structure.
+
 ```python
 from src.data_utils import load_gsm8k, prepare_training_data
 
@@ -52,57 +66,42 @@ examples = load_gsm8k("data/raw/gsm8k.jsonl")
 prepare_training_data(examples, "data/prepared/train.jsonl")
 ```
 
-### 3. Run SFT Training
-```python
-# Use configs/sft_config.yaml
-# See notebooks/02_sft_training.ipynb
-```
+### Training Execution
 
-### 4. Run GRPO (RL)
-```python
-# Use configs/rl_config.yaml  
-# See notebooks/03_rl_grpo_training.ipynb
-```
+Refer to the high-performance notebooks for the complete execution flow.
 
-### 5. Export & Submit
-```python
-from src.export import export_for_kaggle
+1.  **Supervised Fine-Tuning**: Initialize format compliance in `notebooks/02_sft_training.ipynb`.
+2.  **GRPO Optimization**: Enhance reasoning quality in `notebooks/03_rl_grpo_training.ipynb`.
 
-export_for_kaggle("checkpoints/rl/best", "submissions/model")
-```
+## Reward Mechanism
 
-## 📊 Reward Function
-
-Composite reward for GRPO training:
+The Group Relative Policy Optimization (GRPO) phase utilizes a multi-objective reward function to refine model outputs.
 
 | Component | Weight | Description |
-|-----------|--------|-------------|
-| Correctness | 0.60 | Answer matches reference |
-| Trace Structure | 0.25 | Logical steps, transition words |
-| Confidence | 0.15 | Calibrated confidence (RLPR) |
+| :--- | :--- | :--- |
+| Correctness | 0.60 | Verifies the final answer against reference values. |
+| Trace Structure | 0.25 | Evaluates logical flow and use of transition markers. |
+| Confidence | 0.15 | Calibrates model confidence to penalize halluncinated certainty. |
 
-## ⏱️ Kaggle 9-Hour Session Plan
+## Kaggle TPU Execution Schedule
 
-| Time | Phase | Description |
-|------|-------|-------------|
-| 0:00-0:30 | Setup | Install, load data |
-| 0:30-3:00 | SFT | Fine-tune on CoT examples |
-| 3:00-7:30 | GRPO | On-policy RL with rewards |
-| 7:30-8:30 | Eval | Validate and select best |
-| 8:30-9:00 | Export | Save Kaggle-compatible model |
+The training is designed to stay within the 9-hour TPU session limit on Kaggle.
 
-## 📈 Expected Results
+| Timeline | Phase | Activity |
+| :--- | :--- | :--- |
+| 00:00 - 00:30 | Initialization | Library installation and shard loading. |
+| 00:30 - 03:00 | SFT Phase | High-learning-rate supervised fine-tuning. |
+| 03:00 - 07:30 | GRPO Phase | On-policy RL with sample generation and updates. |
+| 07:30 - 09:00 | Validation | Final evaluation and Kaggle-compatible export. |
 
-- **Format Compliance**: ≥95%
-- **GSM8K Accuracy**: ~40-65% (from ~52% baseline)
-- **Trace Score**: 0.75-0.95
+## Scientific Foundations
 
-## 📚 Resources
+This implementation draws from several foundational papers in the field of Large Language Model reasoning:
 
-- [Tunix Documentation](https://tunix.readthedocs.io/)
-- [GRPO Demo (Gemma3)](https://www.kaggle.com/code/windmaple/grpo-demo-gemma3-1b)
-- [DeepSeek-R1 Paper](https://arxiv.org/abs/2401.02954)
+*   **DeepSeek-R1**: On the scaling of reasoning capabilities via RL.
+*   **RLVR**: Reinforcement Learning from Verifiable Rewards.
+*   **Rubrics-as-Rewards**: Providing structured feedback for open-ended traces.
 
-## 📄 License
+## License
 
-Apache 2.0
+This project is released under the Apache 2.0 License.
