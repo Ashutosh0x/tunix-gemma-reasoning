@@ -7,6 +7,7 @@
 [![Kaggle](https://img.shields.io/badge/Kaggle-TPU--v5e--8-blue?logo=kaggle&logoColor=white)](https://www.kaggle.com/)
 
 This project implements a two-stage post-training pipeline to teach Gemma3-1B and Gemma2-2B how to produce structured reasoning traces. By leveraging the Tunix library on Kaggle TPUs, we transition models from direct answering to a chain-of-thought format.
+<img width="2816" height="1536" alt="Gemini_Generated_Image_42y38r42y38r42y3" src="https://github.com/user-attachments/assets/27e25d1a-673d-48dd-b780-e74d7564bf18" />
 
 ## Training Architecture
 
@@ -103,5 +104,6 @@ This implementation draws from several foundational papers in the field of Large
 *   **Rubrics-as-Rewards**: Providing structured feedback for open-ended traces.
 
 ## License
+
 
 This project is released under the Apache 2.0 License.
