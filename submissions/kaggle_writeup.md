@@ -15,6 +15,8 @@ This project trains **Gemma3-1B** to produce structured reasoning traces using G
 
 **Key insight**: Format compliance is learned quickly via SFT, but reasoning *quality* requires on-policy RL (GRPO) with a carefully designed composite reward.
 
+**Architecture Selection**: Gemma3-1B was selected to maximize iteration speed and stability within a single 9-hour Kaggle TPU session while preserving strong reasoning capacity.
+
 This project demonstrates that transparent, step-by-step reasoning can be learned using open-weight models and lightweight post-training techniques, lowering the barrier to explainable AI.
 
 ---
@@ -90,14 +92,9 @@ Before training, we validated the evaluation and reward pipeline by scoring grou
 | Gemma3-1B (SFT-only) | 42% | 98% | 0.72 | 0.61 |
 | **Gemma3-1B (SFT+GRPO)** | **58%** | **99%** | **0.86** | **0.77** |
 
-These results show that:
-- Supervised fine-tuning primarily teaches output format and basic reasoning style
-- GRPO provides a second-phase improvement by encouraging exploration of better reasoning paths that improve correctness while preserving structure
-
-**Key improvements:**
-- **+40 percentage points** accuracy over zero-shot
+- **Gemma3-1B (SFT+GRPO)**: a **+16 point gain** over SFT-only and a **+40 point gain** over the zero-shot baseline demonstrate the value of on-policy RL.
 - **Near-perfect format compliance** (99%)
-- **LLM-as-judge score**: 4.1/5.0 on reasoning quality (50 samples)
+- **LLM-as-judge score**: 4.1/5.0 on reasoning quality (50 samples, GPT-4)
 
 ### Sample Output
 
@@ -122,7 +119,7 @@ Therefore, the average speed is 40 km/h.
 
 ## Ablation
 
-Removing the trace-structure reward reduced average trace score from 0.86 to 0.61, confirming that explicit structural incentives are critical for consistent reasoning behavior.
+Removing the trace-structure reward reduced average trace score from 0.86 to 0.61. This confirms that correctness-only rewards are insufficient for stable reasoning behavior without explicit structural incentives.
 
 ---
 
@@ -136,7 +133,7 @@ Removing the trace-structure reward reduced average trace score from 0.86 to 0.6
 | SFT wall time | ~2 hours |
 | GRPO wall time | ~5 hours |
 | Effective batch | 32 |
-| Max sequence length | 1400 tokens |
+| Max sequence length | 1400 tokens (input + output, output < 1000) |
 | Random seed | 42 |
 
 ---
@@ -164,6 +161,8 @@ Removing the trace-structure reward reduced average trace score from 0.86 to 0.6
 
 Most remaining errors occur in longer multi-step arithmetic, suggesting that future work could benefit from curriculum learning or difficulty-aware sampling during GRPO.
 
+*Note: Failure categories are non-exclusive and may overlap within the same example.*
+
 ---
 
 ## Reproducibility
@@ -175,7 +174,7 @@ Most remaining errors occur in longer multi-step arithmetic, suggesting that fut
 
 Checkpoints are saved every 30 minutes and can be resumed across sessions.
 
-**Final Checkpoint ID**: `[YOUR_KAGGLE_MODEL_ID]`
+**Final Checkpoint ID**: `ashutosh0x/tunix-gemma-reasoning-v1`
 
 ---
 
