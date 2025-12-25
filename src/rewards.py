@@ -207,7 +207,7 @@ def format_compliance_score(text: str) -> float:
 
 def composite_reward(
     pred_text: str,
-    ref_answer: str,
+    ref_answer: Optional[str] = None,
     log_probs: Optional[List[float]] = None,
     weights: Optional[Dict[str, float]] = None
 ) -> Tuple[float, Dict[str, float]]:
@@ -216,30 +216,33 @@ def composite_reward(
     
     R = w1 * Correctness + w2 * TraceStructure + w3 * (1 - ConfidencePenalty)
     
-    Args:
-        pred_text: Full model output with tags
-        ref_answer: Ground truth answer
-        log_probs: Optional log probabilities for confidence scoring
-        weights: Optional weight dict (correctness, trace_structure, confidence)
-        
-    Returns:
-        Tuple of (total_reward, component_scores_dict)
+    If ref_answer is None (non-verifiable task), Correctness is set to 0.5
+    and TraceStructure is prioritized.
     """
-    w = weights or DEFAULT_WEIGHTS
+    w = weights or DEFAULT_WEIGHTS.copy()
     
     # Compute individual components
-    correct = correctness_score(pred_text, ref_answer)
+    if ref_answer:
+        correct = correctness_score(pred_text, ref_answer)
+    else:
+        # For non-verifiable tasks (Creative Writing, Summarization), 
+        # we give a neutral 0.5 correctness and rely heavier on trace structure.
+        correct = 0.5 
+    
     trace = trace_structure_score(pred_text)
     
     if log_probs:
         conf = confidence_score(log_probs)
         # Penalize overconfident wrong answers, reward confident correct answers
-        if correct > 0.5:
+        if correct > 0.6:
             conf_component = conf  # High confidence + correct = good
-        else:
+        elif correct < 0.4:
             conf_component = 1.0 - conf  # High confidence + wrong = bad
+        else:
+            # For neutral correctness (0.5), we don't penalize confidence heavily
+            conf_component = 0.5
     else:
-        conf_component = 0.5  # Neutral if no log probs available
+        conf_component = 0.5
     
     # Weighted sum
     total = (

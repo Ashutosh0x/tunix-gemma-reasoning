@@ -1,0 +1,18 @@
+{
+    "id": "ashutosh0x/tunix-gemma-reasoning-submission",
+    "title": "tunix-gemma-reasoning-submission",
+    "code_file": "03_rl_grpo_training.ipynb",
+    "language": "python",
+    "kernel_type": "notebook",
+    "is_private": "false",
+    "enable_gpu": "false",
+    "enable_tpu": "true",
+    "enable_internet": "true",
+    "dataset_sources": [
+        "google/gemma-3-1b-it"
+    ],
+    "competition_sources": [
+        "google-tunix-hackathon"
+    ],
+    "kernel_sources": []
+}
