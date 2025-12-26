@@ -135,6 +135,10 @@ This implementation draws from several foundational papers:
 - **Tunix Library**: [github.com/google/tunix](https://github.com/google/tunix)
 - **Writeup**: [submissions/kaggle_writeup.md](submissions/kaggle_writeup.md)
 
+## Demo Video
+
+[![Watch the Demo](https://img.youtube.com/vi/-acXXMqog34/0.jpg)](https://youtu.be/-acXXMqog34)
+
 ## License
 
 This project is released under the Apache 2.0 License.
