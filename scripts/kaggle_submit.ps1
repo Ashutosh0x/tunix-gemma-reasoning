@@ -2,7 +2,7 @@
 # ======================================
 
 # Configure API Token
-$env:KAGGLE_API_TOKEN = "KGAT_9bf901da0a423fea7f94eea35d85d0da"
+$env:KAGGLE_API_TOKEN = "KGAT_c6ed21f79bd5ad84de5016ee4cdd2c60"
 
 Write-Host "🚀 Starting Kaggle Submission Procedure..." -ForegroundColor Cyan
 

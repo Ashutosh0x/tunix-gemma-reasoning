@@ -8,8 +8,9 @@
     "enable_gpu": "false",
     "enable_tpu": "true",
     "enable_internet": "true",
-    "dataset_sources": [
-        "google/gemma-3-1b-it"
+    "dataset_sources": [],
+    "model_sources": [
+        "google/gemma-3/transformers/gemma-3-1b-it"
     ],
     "competition_sources": [
         "google-tunix-hackathon"
