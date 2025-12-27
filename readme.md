@@ -15,6 +15,7 @@ This project implements a two-stage post-training pipeline to teach Gemma3-1B ho
 ### Learning Curves
 
 The training demonstrates stable GRPO optimization with curriculum learning and reward weight annealing:
+<img width="2816" height="1536" alt="inbox_19260364_6ced557927da10a3c19175797d3848fb_gemma diagram" src="https://github.com/user-attachments/assets/2d7c589a-2bdc-4405-9cf0-a7d5d2479d0d" />
 
 <img width="1489" height="790" alt="image" src="https://github.com/user-attachments/assets/3d442438-6011-4128-b14c-6560611aafab" />
 
@@ -142,4 +143,5 @@ This implementation draws from several foundational papers:
 ## License
 
 This project is released under the Apache 2.0 License.
+
 
